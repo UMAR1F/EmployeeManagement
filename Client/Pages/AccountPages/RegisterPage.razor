@@ -1,0 +1,115 @@
+﻿@page "/identity/account/register"
+@layout AuthentificationLayout;
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4"></div>
+            <div class="col-lg-4">
+            <EditForm Model="User" OnValidSubmit="HandleRegistration">
+                <DataAnnotationsValidator />
+              
+                <div class="card bg-dark" style="opacity:0.5; margin-top:50%; border-radius:10px; color:white; font-weight:bold;">
+                    <div class="card-header text-center fs-5 mb-2">Fill This Registration Form</div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-lg-4 col-md-4 col-se-4"></div>
+                            <div class="col-lg-4 col-md-4 col-se-4 d-flex justify-content-center">
+                                <img style="border-radius:20px" src="../Images/Logo/logo.jpg" height="50" width="50" />
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-se-4"></div>
+                        </div>
+                    </div> 
+                    <div class="card-body">
+                        <div class="form-group-mt-3">
+                            <label class="form-label">FullName</label>
+                            <InputText @bind-Value="User.FullName" class="form-control"></InputText>
+                        </div>
+                        <div class="form-group-mt-3">
+                            <label class="form-label">Email</label>
+                            <InputText @bind-Value="User.Email" class="form-control"></InputText>
+                        </div>
+                        <div class="form-group-mt-3">
+                            <label class="form-label">Password</label>
+                            <InputText @bind-Value="User.Password" class="form-control" type="password" />
+                        </div>
+                        <div class="form-group-mt-3">
+                            <label class="form-label">Confirm Password</label>
+                            <InputText @bind-Value="User.ComfirmPassword" class="form-control" type="password" />
+                        </div>
+                        <p></p>
+                        @if(ShowLoadingButton)
+                        {
+
+                            <BtuttonLoadingSpinner></BtuttonLoadingSpinner>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-primary float-end" type="submit">Register</button>
+                        }
+                     
+                        
+                    </div>
+                    <div class="card-footer">
+                        <span class="text-center">
+                           Have you registerd? |
+                            <a class="btn-link" href="/identity/account/login">Sign In</a>
+                        </span>
+                        <ValidationSummary />
+                    </div>
+                </div>
+            </EditForm>  
+                <div class="col-lg-4"></div>
+           
+        </div><a href="c:\users\user\source\repos\employeemanagement\client\_imports.razor">c:\users\user\source\repos\employeemanagement\client\_imports.razor</a>
+    </div>
+</div>
+
+@code {
+
+    public bool ShowLoadingButton { get; set; } = false;
+    Register User = new();
+
+    [CascadingParameter] public Task<AuthenticationState> AuthenticationState { get; set; }
+
+    private async Task CheckUserAuthentication()
+    {
+        var user = (await AuthenticationState).User;
+        bool IsuserAuthentificated = user.Identity!.IsAuthenticated;
+        if (IsuserAuthentificated) NavManager.NavigateTo("home/dashboard");
+
+    }
+
+    async Task HandleRegistration()
+    {
+        ShowLoadingButton = true;
+        var result = await accountService.CreateAsync(User);
+
+        if (result.Flag)
+        {
+         await DisplayDialog(result.Messsage, "Successfully Created");
+           // Redirect to login page or dashboard
+
+
+           NavManager.NavigateTo("/login");
+            User = new();
+        }
+        else
+        {
+            await DisplayDialog(result.Messsage, "Alert"); 
+        }
+        ShowLoadingButton = false;
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await CheckUserAuthentication();
+    }
+    private async Task DisplayDialog(string content, string title)
+    {
+        await DialogService.AlertAsync(title, content);
+    }
+   
+  
+
+} 
